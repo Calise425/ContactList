@@ -1,48 +1,38 @@
-import React,{ useState } from 'react';
-import dummyContacts from '../dummyData';
+import React,{ useState, useEffect } from 'react';
+import ContactList from './ContactList';
+import SingleContact from './SingleContact';
+
 
 const Main = () => {
-  const [contacts, setContacts] = useState(dummyContacts)
-  const contactsName = contacts.map(contact => {
-    return contact.name});
+  const [contacts, setContacts] = useState([]);
+  const [selectedContact, setSelectedContact] = useState({});
+
+  const getContacts = async () => {
+    const response = await fetch('http://jsonplace-univclone.herokuapp.com/users');
+    const users = await response.json();
+    setContacts(users);
+  };
+
+  useEffect(()=>{
+    getContacts();
+  }, []);
+
+  const selectContact = async (contactId) => {
+    try {
+      const response = await fetch(`http://jsonplace-univclone.herokuapp.com/users/${contactId}`)
+      const result = await response.json();
+      setSelectedContact(result);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <div id="main">
       <div id="navbar">
         <div>Contact List</div>
       </div>
-      <div id="container">{
-        <table>
-          <tbody>
-            <tr>
-              <th>Name</th>
-              <th>Phone</th>
-              <th>Email</th>
-            </tr>
-
-            {dummyContacts.map(contact =>
-             
-               {return <tr>
-                <td>{contact.name}</td>
-                <td>{contact.phone}</td>
-                <td>{contact.email}</td>
-                </tr>}
-                )
-              }
-            <tr>
-              <td>Person One</td>
-              <td>000-000-0000</td>
-              <td>one@email.com</td>
-            </tr>
-
-            {/* Contact 2 */}
-            <tr>
-              <td>Person Two</td>
-              <td>111-111-1111</td>
-              <td>two@email.com</td>
-            </tr>
-
-          </tbody>
-        </table>}
+      <div id="container">
+        {selectedContact.id ? <SingleContact contact = {selectedContact}/> : <ContactList contacts = {contacts} func = {selectContact}/>}
       </div>
     </div>
   );
